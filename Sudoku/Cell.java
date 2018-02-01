@@ -4,8 +4,8 @@ import greenfoot.*;
  * Write a description of class Cell here.
  * 
  * @Noah Keck
- * @v1.0
- * @1/26/2018
+ * @v1.1
+ * @1/31/2018
  */
 public class Cell extends Actor
 {
@@ -15,6 +15,7 @@ public class Cell extends Actor
     
     public Cell()
     {
+        num = 0;
         world = (SudokuBoard)getWorld();
         setImage(world.getBlankSquare());
     }
@@ -31,7 +32,7 @@ public class Cell extends Actor
             this.image = world.getImageNumber(num);
         setImage(image);
     }
-    public void act() 
+    public void act()
     {
         world = (SudokuBoard)getWorld();
     }
