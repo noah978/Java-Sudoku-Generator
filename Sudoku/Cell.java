@@ -4,14 +4,14 @@ import greenfoot.*;
  * Write a description of class Cell here.
  * 
  * @Noah Keck
- * @v1.1
- * @1/31/2018
+ * @v1.1.1
+ * @2/2/2018
  */
 public class Cell extends Actor
 {
     private GreenfootImage image;
     private SudokuBoard world;
-    private int num;
+    private int num, hiddenNum;
     
     public Cell()
     {
@@ -19,17 +19,17 @@ public class Cell extends Actor
         world = (SudokuBoard)getWorld();
         setImage(world.getBlankSquare());
     }
-    public int getNum()
-    {
-        return num;
-    }
+    public int getNum(){return num;}
+    public int getHiddenNum(){return hiddenNum;}
     public void setNum(int number)
     {
         num = number;
         if (num == 0)
             this.image = world.getBlankSquare();
-        else
+        else{
             this.image = world.getImageNumber(num);
+            hiddenNum = num;
+        }
         setImage(image);
     }
     public void act()

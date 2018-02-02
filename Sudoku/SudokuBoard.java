@@ -11,13 +11,13 @@ import java.awt.image.BufferedImage;
  * Write a description of class SodokuBoard here.
  * 
  * @Noah Keck
- * @v1.1
- * @1/31/2018
+ * @v1.1.1
+ * @2/2/2018
  */
 public class SudokuBoard extends World
 {
     private static GreenfootImage backdrop, blankSquare;
-    private static GreenfootImage[] numberImages;
+    private static GreenfootImage[] numberImages, blueNumberImages, redNumberImages;
     private Cell[][] board;
     public Random rand;
     public int size, difficulty, recur, numberOfSolutions;
@@ -47,7 +47,6 @@ public class SudokuBoard extends World
         create = true;
         loadContent();
         setBackground(backdrop);
-        out.print("\f");
         createCells();
         //createBoard();
     }
@@ -64,13 +63,21 @@ public class SudokuBoard extends World
         backdrop = new GreenfootImage("SodokuBoardSmall.png");
         blankSquare = new GreenfootImage(31*size, 31*size); //transparent blank square
         numberImages = new GreenfootImage[9];
-        for (int i = 0; i < numberImages.length; i++)
+        blueNumberImages = new GreenfootImage[9];
+        redNumberImages = new GreenfootImage[9];
+        for (int i = 0; i < numberImages.length; i++){
             numberImages[i] = new GreenfootImage("Square" + (i+1) + ".png");
+            blueNumberImages[i] = new GreenfootImage("BlueSquare" + (i+1) + ".png");
+            redNumberImages[i] = new GreenfootImage("RedSquare" + (i+1) + ".png");
+        }
 
         //scale all images
         backdrop.scale(backdrop.getWidth()/4*size, backdrop.getHeight()/4*size);
-        for (int i = 0; i < numberImages.length; i++)
+        for (int i = 0; i < numberImages.length; i++){
             numberImages[i].scale(31*size, 31*size);
+            blueNumberImages[i].scale(31*size, 31*size);
+            redNumberImages[i].scale(31*size, 31*size);
+        }
     }
 
     private void createCells()
@@ -97,14 +104,9 @@ public class SudokuBoard extends World
      */
     private void createBoard()
     {
-        out.println(setNums(0,0) + " " + recur);
+        out.println("\f" + setNums(0,0) + " " + recur);
         recur = 0;
         removeNums();
-        /*for (int i = 0; i < 7; i++)
-            for (int j = 0; j < 6; j++)
-                board[i][j].setNum(0);
-        out.println(checkForOneSolution(0,0,convertToMatrix()) + " " + recur + " " + numberOfSolutions);
-        recur = 0; numberOfSolutions = 0;*/
     }
 
     private boolean setNums(int r, int c)
