@@ -4,8 +4,8 @@ import greenfoot.*;
  * Write a description of class Cell here.
  * 
  * @Noah Keck
- * @v1.1.1
- * @2/2/2018
+ * @v1.1.2
+ * @2/4/2018
  */
 public class Cell extends Actor
 {

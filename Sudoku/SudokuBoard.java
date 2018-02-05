@@ -11,22 +11,20 @@ import java.awt.image.BufferedImage;
  * Write a description of class SodokuBoard here.
  * 
  * @Noah Keck
- * @v1.1.1
- * @2/2/2018
+ * @v1.1.2
+ * @2/4/2018
  */
 public class SudokuBoard extends World
 {
     private static GreenfootImage backdrop, blankSquare;
     private static GreenfootImage[] numberImages, blueNumberImages, redNumberImages;
+    private static final int difficulty = 23;
     private Cell[][] board;
     public Random rand;
-    public int size, difficulty, recur, numberOfSolutions;
-    public boolean create; 
+    public int size, recur, numberOfSolutions;
 
     /**
      * Use this constructor to set the default size of board
-     * 
-     * Size is 1-4, 1 is the smallest, 4 is the largest
      */
     public SudokuBoard()
     {    
@@ -36,26 +34,22 @@ public class SudokuBoard extends World
     /**
      * Creates a new SodokuBoard based on given size used as a multiplier
      * 
-     * Size is 1-4, 1 is the smallest, 4 is the largest
+     * @param size 1-4, 1 is the smallest, 4 is the largest
      */
     public SudokuBoard(int size)
     {
         super(300 * size, 300 * size, 1);
         this.size = size;
-        difficulty = 19;
         rand = new Random();
-        create = true;
         loadContent();
         setBackground(backdrop);
-        createCells();
         //createBoard();
     }
 
     public void act()
     {
-        createCells();
         createBoard();
-        //saveWorldAsImage();
+        saveWorldAsImage();
     }
 
     private void loadContent()
@@ -80,7 +74,7 @@ public class SudokuBoard extends World
         }
     }
 
-    private void createCells()
+    public void createCells()
     {
         board = new Cell[9][9];
         removeObjects(getObjects(Cell.class));
@@ -102,14 +96,16 @@ public class SudokuBoard extends World
      * 3. Remove images in groups, ensuring that the puzzle only has one solution
      * 4. Puzzle is completed once 20-30 clues / images remain
      */
-    private void createBoard()
+    public void createBoard()
     {
-        out.println("\f" + setNums(0,0) + " " + recur);
-        recur = 0;
-        removeNums();
+        do{
+            createCells();
+            out.println("\f" + setNums(0,0) + " " + recur);
+            recur = 0;
+        }while(!removeNums());
     }
 
-    private boolean setNums(int r, int c)
+    public boolean setNums(int r, int c)
     {
         if (r >= 9)
             return true;
@@ -139,12 +135,11 @@ public class SudokuBoard extends World
      * It checks that the removed numbers leave one unique solution. If it does, it also removes this from the board.
      * If it doesn't work, it recreates the integer matrix and trys again.
      */
-    private void removeNums()
+    public boolean removeNums()
     {
-        int clueCount = 81;
+        int clueCount = 81, r = 0, c = 0;
+        long startTime = System.nanoTime();
         int[][] b = convertToMatrix();
-        int r = 0;
-        int c = 0;
         while (clueCount > difficulty){
             while (true){
                 r = rand.nextInt(9);
@@ -191,14 +186,17 @@ public class SudokuBoard extends World
                 b = convertToMatrix();
             }
             numberOfSolutions = 0;
+            if (System.nanoTime() - startTime > Math.pow(10, 9)*4) // 3 seconds
+                return false;
         }
+        return true;
     }
 
     /**
      * This method should check every possible combination of numbers to see if its a valid solution.
      * It should finally return true when the first blank number it checked runs out of numbers to check.
      */
-    private boolean checkForOneSolution(int r, int c, int[][] boardCopy)
+    public boolean checkForOneSolution(int r, int c, int[][] boardCopy)
     {
         if (r >= 9){
             numberOfSolutions++;
@@ -251,7 +249,7 @@ public class SudokuBoard extends World
      * @param c the column of cell 0-8
      * @param num the number its checking for 1-9
      */
-    private boolean checkSquare(int r, int c, int num, int[][] boardCopy)
+    public boolean checkSquare(int r, int c, int num, int[][] boardCopy)
     {
         if (r < 3)
             r = 0;
@@ -274,7 +272,7 @@ public class SudokuBoard extends World
         return true;
     }
 
-    private boolean checkRow(int r, int num, int[][] boardCopy)
+    public boolean checkRow(int r, int num, int[][] boardCopy)
     {
         for (int value : boardCopy[r])
             if (value == num)
@@ -282,7 +280,7 @@ public class SudokuBoard extends World
         return true;
     }
 
-    private boolean checkColumn(int c, int num, int[][] boardCopy)
+    public boolean checkColumn(int c, int num, int[][] boardCopy)
     {
         for (int[] row : boardCopy)
             if (row[c] == num)
@@ -301,6 +299,9 @@ public class SudokuBoard extends World
         return blankSquare;
     }
 
+    /**
+     * Saves an image of the generated Sudoku to the same folder as the greenfoot project.
+     */
     public void saveWorldAsImage()
     {
         GreenfootImage main = new GreenfootImage(getBackground());
