@@ -1,4 +1,5 @@
 import greenfoot.*;
+import static greenfoot.Greenfoot.*;
 import java.util.*;
 import static java.lang.System.*;
 
@@ -11,14 +12,14 @@ import java.awt.image.BufferedImage;
  * Write a description of class SodokuBoard here.
  * 
  * @Noah Keck
- * @v1.1.2
- * @2/4/2018
+ * @v1.1.3
+ * @2/5/2018
  */
 public class SudokuBoard extends World
 {
-    private static GreenfootImage backdrop, blankSquare;
+    private static GreenfootImage backdrop, blankSquare, cursorSquare;
     private static GreenfootImage[] numberImages, blueNumberImages, redNumberImages;
-    private static final int difficulty = 23;
+    private static final int difficulty = 22;
     private Cell[][] board;
     public Random rand;
     public int size, recur, numberOfSolutions;
@@ -34,7 +35,7 @@ public class SudokuBoard extends World
     /**
      * Creates a new SodokuBoard based on given size used as a multiplier
      * 
-     * @param size 1-4, 1 is the smallest, 4 is the largest
+     * @param size values 1 through 4, 1 is the smallest, 4 is the largest
      */
     public SudokuBoard(int size)
     {
@@ -43,19 +44,22 @@ public class SudokuBoard extends World
         rand = new Random();
         loadContent();
         setBackground(backdrop);
-        //createBoard();
+        createBoard();
     }
 
     public void act()
     {
-        createBoard();
-        saveWorldAsImage();
+        if (isKeyDown("space")){
+            createBoard();
+            saveWorldAsImage();
+        }
     }
 
     private void loadContent()
     {
         backdrop = new GreenfootImage("SodokuBoardSmall.png");
         blankSquare = new GreenfootImage(31*size, 31*size); //transparent blank square
+        cursorSquare = new GreenfootImage("CursorSquare.png");
         numberImages = new GreenfootImage[9];
         blueNumberImages = new GreenfootImage[9];
         redNumberImages = new GreenfootImage[9];
@@ -64,9 +68,9 @@ public class SudokuBoard extends World
             blueNumberImages[i] = new GreenfootImage("BlueSquare" + (i+1) + ".png");
             redNumberImages[i] = new GreenfootImage("RedSquare" + (i+1) + ".png");
         }
-
         //scale all images
         backdrop.scale(backdrop.getWidth()/4*size, backdrop.getHeight()/4*size);
+        cursorSquare.scale(31*size,31*size);
         for (int i = 0; i < numberImages.length; i++){
             numberImages[i].scale(31*size, 31*size);
             blueNumberImages[i].scale(31*size, 31*size);
@@ -100,11 +104,16 @@ public class SudokuBoard extends World
     {
         do{
             createCells();
-            out.println("\f" + setNums(0,0) + " " + recur);
-            recur = 0;
+            setNums(0,0);
         }while(!removeNums());
     }
 
+    /**
+     * Sets a blank grid of cells to numbers that follow sudoku rules using recursion.
+     * 
+     * @param r current row
+     * @param c current column
+     */
     public boolean setNums(int r, int c)
     {
         if (r >= 9)
@@ -169,8 +178,7 @@ public class SudokuBoard extends World
                     break;
                 }
             }
-            out.println(checkForOneSolution(0,0,b.clone()) + " " + recur + " " + numberOfSolutions);
-            recur = 0;
+            checkForOneSolution(0,0,b.clone());
             if (numberOfSolutions <= 1){
                 for(int i = 0; i < board.length; i++)
                     for(int j = 0; j < board[i].length; j++)
@@ -182,9 +190,8 @@ public class SudokuBoard extends World
                 else
                     clueCount--;
             }
-            else{
+            else
                 b = convertToMatrix();
-            }
             numberOfSolutions = 0;
             if (System.nanoTime() - startTime > Math.pow(10, 9)*4) // 3 seconds
                 return false;
@@ -195,6 +202,10 @@ public class SudokuBoard extends World
     /**
      * This method should check every possible combination of numbers to see if its a valid solution.
      * It should finally return true when the first blank number it checked runs out of numbers to check.
+     * 
+     * @param r current row
+     * @param c current column
+     * @param boardCopy the numbers remaining in a sudoku grid
      */
     public boolean checkForOneSolution(int r, int c, int[][] boardCopy)
     {
@@ -272,6 +283,10 @@ public class SudokuBoard extends World
         return true;
     }
 
+    /**
+     * @param r the row of cell 0-8
+     * @param num the number its checking for 1-9
+     */
     public boolean checkRow(int r, int num, int[][] boardCopy)
     {
         for (int value : boardCopy[r])
@@ -280,6 +295,10 @@ public class SudokuBoard extends World
         return true;
     }
 
+    /**
+     * @param c the column of cell 0-8
+     * @param num the number its checking for 1-9
+     */
     public boolean checkColumn(int c, int num, int[][] boardCopy)
     {
         for (int[] row : boardCopy)
@@ -289,15 +308,15 @@ public class SudokuBoard extends World
     }
 
     //graphics based methods
-    public static GreenfootImage getImageNumber(int number)
-    {
-        return numberImages[number-1];
-    }
+    public static GreenfootImage getImageNumber(int number){return numberImages[number-1];}
     
-    public static GreenfootImage getBlankSquare()
-    {
-        return blankSquare;
-    }
+    public static GreenfootImage getBlueImageNumber(int number){return blueNumberImages[number-1];}
+    
+    public static GreenfootImage getRedImageNumber(int number){return redNumberImages[number-1];}
+    
+    public static GreenfootImage getBlankSquare(){return blankSquare;}
+    
+    public static GreenfootImage getCursorSquare(){return cursorSquare;}
 
     /**
      * Saves an image of the generated Sudoku to the same folder as the greenfoot project.
@@ -314,7 +333,7 @@ public class SudokuBoard extends World
             ImageIO.write(image, "png", filepath);
         }
         catch (IOException e){
-            System.out.println("File output failed.");
+            out.println("File output failed.");
         }
     }
 }
