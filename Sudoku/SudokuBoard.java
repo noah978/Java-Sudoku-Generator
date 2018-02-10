@@ -12,17 +12,17 @@ import java.awt.image.BufferedImage;
  * Write a description of class SodokuBoard here.
  * 
  * @Noah Keck
- * @v1.1.3
- * @2/5/2018
+ * @v1.2
+ * @2/9/2018
  */
 public class SudokuBoard extends World
 {
     private static GreenfootImage backdrop, blankSquare, cursorSquare;
     private static GreenfootImage[] numberImages, blueNumberImages, redNumberImages;
-    private static final int difficulty = 22;
+    private static final int difficulty = 23;
     private Cell[][] board;
     public Random rand;
-    public int size, recur, numberOfSolutions;
+    public static int size, numberOfSolutions;
 
     /**
      * Use this constructor to set the default size of board
@@ -84,7 +84,7 @@ public class SudokuBoard extends World
         removeObjects(getObjects(Cell.class));
         for (int i = 0; i < board.length; i++){
             for (int j = 0; j < board[0].length; j++){
-                board[j][i] = new Cell();
+                board[j][i] = new Cell(j,i);
                 addObject(board[j][i], (1*size)*(i/3+1) + (33*size)*i + 31*size/2, (1*size)*(j/3+1) + (33*size)*j + 31*size/2);
                 //addition of different factors of the location:
                 //offset due to grid walls + current position (in array) + undo the image centering (done automatically by greenfoot)
@@ -120,7 +120,6 @@ public class SudokuBoard extends World
             return true;
         if (c >= 9)
             return setNums(r+1, 0);
-        recur++;
         ArrayList<Integer> nums = new ArrayList<Integer>(Arrays.asList(1,2,3,4,5,6,7,8,9));
         int num = 0;
         while (true){
@@ -215,7 +214,6 @@ public class SudokuBoard extends World
         }
         if (c >= 9)
             return checkForOneSolution(r+1, 0, boardCopy);
-        recur++;
         if (boardCopy[r][c] != 0) //already has a valid number
             return checkForOneSolution(r, c+1, boardCopy);
         int num = 0;
@@ -240,17 +238,17 @@ public class SudokuBoard extends World
         return boardCopy;
     }
 
-    private boolean checkSquare(int r, int c, int num)
+    public boolean checkSquare(int r, int c, int num)
     {
         return checkSquare(r, c, num, convertToMatrix());
     }
 
-    private boolean checkRow(int r, int num)
+    public boolean checkRow(int r, int num)
     {
         return checkRow(r, num, convertToMatrix());
     }
 
-    private boolean checkColumn(int c, int num)
+    public boolean checkColumn(int c, int num)
     {
         return checkColumn(c, num, convertToMatrix());
     }
@@ -318,6 +316,28 @@ public class SudokuBoard extends World
     
     public static GreenfootImage getCursorSquare(){return cursorSquare;}
 
+    /**
+     * Returns a GreenfootImage of all 9 possible numbers as a single cell image.
+     * The method will only add the numbers based on the number array given;
+     */
+    public static GreenfootImage getMiniNumbers(ArrayList<Integer> orig)
+    {
+        ArrayList<Integer> nums = new ArrayList<Integer>(orig);
+        GreenfootImage image = new GreenfootImage(31*size, 31*size);
+        for (int i = 0; i < 3 && !nums.isEmpty(); i++){
+            for (int j = 0; j < 3 && !nums.isEmpty(); j++){
+                if (nums.get(0) == (i*3) + j + 1){
+                    GreenfootImage smallImage = new GreenfootImage(31*size, 31*size);
+                    smallImage.drawImage(getImageNumber(nums.get(0)), 0, 0); //possibly need to center
+                    nums.remove(0);
+                    smallImage.scale(10*size, 10*size);
+                    image.drawImage(smallImage, 10*size*j, 10*size*i);
+                }
+            }
+        }
+        return image;
+    }
+    
     /**
      * Saves an image of the generated Sudoku to the same folder as the greenfoot project.
      */

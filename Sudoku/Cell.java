@@ -1,4 +1,5 @@
 import greenfoot.*;
+import java.util.*;
 import static greenfoot.Greenfoot.*;
 
 /**
@@ -6,20 +7,24 @@ import static greenfoot.Greenfoot.*;
  * May contain a zero to denote the fact that the cell is empty.
  * 
  * @Noah Keck
- * @v1.1.3
- * @2/5/2018
+ * @v1.2
+ * @2/9/2018
  */
 public class Cell extends Actor
 {
-    public enum CellState{EMPTY, CLICKED, FILLED, HARDSET}
+    public enum CellState{EMPTY, CLICKED, RCLICKED, GUESSED, FILLED, HARDSET}
     private GreenfootImage image;
     private SudokuBoard world;
-    private int num, hiddenNum, timer;
+    private int num, hiddenNum, timer, row, col;
+    private ArrayList<Integer> miniNums;
     private CellState state = CellState.EMPTY;
     
-    public Cell()
+    public Cell(int row, int column)
     {
+        this.row = row;
+        col = column;
         num = 0;
+        miniNums = new ArrayList<Integer>();
         world = (SudokuBoard)getWorld();
         setImage(world.getBlankSquare());
     }
@@ -53,35 +58,65 @@ public class Cell extends Actor
             int i = image.getWidth()/2;
             if (ms.getX()>=this.getX()-i && ms.getX()<=this.getX()+i && ms.getY()>=this.getY()-i && ms.getY()<=this.getY()+i){
                 if (ms.getButton() == 1 && state != CellState.HARDSET){
-                    state = CellState.CLICKED; timer = 0;
+                    state = CellState.CLICKED;
+                    timer = 0;
+                    num = 0;
+                    miniNums.clear();
                 }
-                if (ms.getButton() == 2 && state != CellState.HARDSET){ //figure out how to allow guess nums
-                    //some code
+                if (ms.getButton() == 3 && state != CellState.HARDSET){ //figure out how to allow guess nums
+                    state = CellState.RCLICKED;
+                    num = 0;
                 }
             }
-            else if (state == CellState.CLICKED && ms.getButton() == 1){
+            else if ((state == CellState.CLICKED || state == CellState.RCLICKED) && ms.getButton() == 1){
                 state = CellState.EMPTY;
                 setImage(world.getBlankSquare());
             }
         }
         if (state == CellState.CLICKED){
-            //animation
+            //cursor animation
             if (timer % 40 == 0)
                 image = world.getCursorSquare();
             else if (timer % 20 == 0)
                 image = world.getBlankSquare();
             setImage(image);
-            num = 0;
             for (int i = 1; i <= 9; i++){
                 if (isKeyDown(Integer.toString(i))){
-                    num = i;
-                    if (num == hiddenNum)
-                        setImage(world.getBlueImageNumber(num));
+                    if (world.checkSquare(row, col, i) && world.checkRow(row, i) && world.checkColumn(col, i))
+                        setImage(world.getBlueImageNumber(i));
                     else
-                        setImage(world.getRedImageNumber(num));
+                        setImage(world.getRedImageNumber(i));
+                    num = i;
                     state = CellState.FILLED;
+                    break;
                 }
             }
+        }
+        else if (state == CellState.RCLICKED){
+            image = world.getMiniNumbers(new ArrayList<Integer>(Arrays.asList(1,2,3,4,5,6,7,8,9)));
+            for (int i = 1; i <= 9; i++){
+                if (isKeyDown(Integer.toString(i))){
+                    miniNums.add(i);
+                    image = world.getMiniNumbers(miniNums);
+                    state = CellState.GUESSED;
+                    break;
+                }
+            }
+            setImage(image);
+        }
+        else if (state == CellState.FILLED){
+            int save = num;
+            num = 0;
+            for (int i = 1; i <= 9; i++){
+                if (isKeyDown(Integer.toString(i)) || (ms != null && ms.getButton() == 1)){
+                    if (world.checkSquare(row, col, save) && world.checkRow(row, save) && world.checkColumn(col, save))
+                        setImage(world.getBlueImageNumber(save));
+                    else
+                        setImage(world.getRedImageNumber(save));
+                    break;
+                }
+            }
+            num = save;
         }
     }
 }
