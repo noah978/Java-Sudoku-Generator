@@ -7,7 +7,7 @@ import static greenfoot.Greenfoot.*;
  * May contain a zero to denote the fact that the cell is empty.
  * 
  * @Noah Keck
- * @v1.2
+ * @v1.2.1
  * @2/9/2018
  */
 public class Cell extends Actor
@@ -68,7 +68,7 @@ public class Cell extends Actor
                     num = 0;
                 }
             }
-            else if ((state == CellState.CLICKED || state == CellState.RCLICKED) && ms.getButton() == 1){
+            else if ((state == CellState.CLICKED || state == CellState.RCLICKED) && (ms.getButton() == 1 || ms.getButton() == 2)){
                 state = CellState.EMPTY;
                 setImage(world.getBlankSquare());
             }
@@ -96,7 +96,11 @@ public class Cell extends Actor
             image = world.getMiniNumbers(new ArrayList<Integer>(Arrays.asList(1,2,3,4,5,6,7,8,9)));
             for (int i = 1; i <= 9; i++){
                 if (isKeyDown(Integer.toString(i))){
-                    miniNums.add(i);
+                    if (miniNums.indexOf(new Integer(i)) != -1)
+                        miniNums.remove(new Integer(i));
+                    else
+                        miniNums.add(i);
+                    Collections.sort(miniNums);
                     image = world.getMiniNumbers(miniNums);
                     state = CellState.GUESSED;
                     break;

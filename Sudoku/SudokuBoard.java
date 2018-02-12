@@ -12,14 +12,14 @@ import java.awt.image.BufferedImage;
  * Write a description of class SodokuBoard here.
  * 
  * @Noah Keck
- * @v1.2
+ * @v1.2.1
  * @2/9/2018
  */
 public class SudokuBoard extends World
 {
     private static GreenfootImage backdrop, blankSquare, cursorSquare;
     private static GreenfootImage[] numberImages, blueNumberImages, redNumberImages;
-    private static final int difficulty = 23;
+    private static final int difficulty = 26;
     private Cell[][] board;
     public Random rand;
     public static int size, numberOfSolutions;
@@ -165,19 +165,26 @@ public class SudokuBoard extends World
                     if (c != 8 && b[r][c] != 0 && b[r][c+1] != 0){ //extends to the right
                         for (int i = 0; i < 2; i++)
                             b[r][c+i] = 0;
+                        break;
                     }
                     else if (r != 8 && b[r][c] != 0 && b[r+1][c] != 0){ //extends below
                         for (int i = 0; i < 2; i++)
                             b[r+i][c] = 0;
+                        break;
                     }
-                    break;
                 }
                 else if (b[r][c] != 0){ //1 by 1
                     b[r][c] = 0;
                     break;
                 }
             }
-            checkForOneSolution(0,0,b.clone());
+            
+            int[][] cloned = new int[b.length][b[0].length];
+            for(int i = 0; i < board.length; i++)
+                for(int j = 0; j < board[i].length; j++)
+                    cloned[i][j] = b[i][j];
+                    
+            checkForOneSolution(0,0,cloned);
             if (numberOfSolutions <= 1){
                 for(int i = 0; i < board.length; i++)
                     for(int j = 0; j < board[i].length; j++)
@@ -192,8 +199,10 @@ public class SudokuBoard extends World
             else
                 b = convertToMatrix();
             numberOfSolutions = 0;
-            if (System.nanoTime() - startTime > Math.pow(10, 9)*4) // 3 seconds
-                return false;
+            if (System.nanoTime() - startTime > Math.pow(10, 9) * 5){ // 4 seconds
+                out.println("Failed to reduce puzzle. Reached a clue count of: " + clueCount);
+                return false; 
+            }
         }
         return true;
     }
@@ -323,6 +332,7 @@ public class SudokuBoard extends World
     public static GreenfootImage getMiniNumbers(ArrayList<Integer> orig)
     {
         ArrayList<Integer> nums = new ArrayList<Integer>(orig);
+        Collections.sort(nums);
         GreenfootImage image = new GreenfootImage(31*size, 31*size);
         for (int i = 0; i < 3 && !nums.isEmpty(); i++){
             for (int j = 0; j < 3 && !nums.isEmpty(); j++){

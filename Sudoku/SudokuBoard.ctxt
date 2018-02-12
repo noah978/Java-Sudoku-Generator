@@ -1,6 +1,6 @@
 #BlueJ class context
 comment0.target=SudokuBoard
-comment0.text=\r\n\ Write\ a\ description\ of\ class\ SodokuBoard\ here.\r\n\ \r\n\ @Noah\ Keck\r\n\ @v1.2\r\n\ @2/9/2018\r\n
+comment0.text=\r\n\ Write\ a\ description\ of\ class\ SodokuBoard\ here.\r\n\ \r\n\ @Noah\ Keck\r\n\ @v1.2.1\r\n\ @2/9/2018\r\n
 comment1.params=
 comment1.target=SudokuBoard()
 comment1.text=\r\n\ Use\ this\ constructor\ to\ set\ the\ default\ size\ of\ board\r\n

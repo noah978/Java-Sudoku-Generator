@@ -1,6 +1,6 @@
 #BlueJ class context
 comment0.target=Cell
-comment0.text=\r\n\ Contains\ a\ valid\ Sudoku\ number\ and\ uses\ an\ image\ to\ display\ to\ the\ world.\r\n\ May\ contain\ a\ zero\ to\ denote\ the\ fact\ that\ the\ cell\ is\ empty.\r\n\ \r\n\ @Noah\ Keck\r\n\ @v1.2\r\n\ @2/9/2018\r\n
+comment0.text=\r\n\ Contains\ a\ valid\ Sudoku\ number\ and\ uses\ an\ image\ to\ display\ to\ the\ world.\r\n\ May\ contain\ a\ zero\ to\ denote\ the\ fact\ that\ the\ cell\ is\ empty.\r\n\ \r\n\ @Noah\ Keck\r\n\ @v1.2.1\r\n\ @2/9/2018\r\n
 comment1.params=row\ column
 comment1.target=Cell(int,\ int)
 comment2.params=
