@@ -7,8 +7,8 @@ import static greenfoot.Greenfoot.*;
  * May contain a zero to denote the fact that the cell is empty.
  * 
  * @Noah Keck
- * @v1.2.1
- * @2/9/2018
+ * @v1.2.2
+ * @2/16/2018
  */
 public class Cell extends Actor
 {
@@ -68,7 +68,7 @@ public class Cell extends Actor
                     num = 0;
                 }
             }
-            else if ((state == CellState.CLICKED || state == CellState.RCLICKED) && (ms.getButton() == 1 || ms.getButton() == 2)){
+            else if ((state == CellState.CLICKED || state == CellState.RCLICKED) && (ms.getButton() == 1 || ms.getButton() == 3)){
                 state = CellState.EMPTY;
                 setImage(world.getBlankSquare());
             }

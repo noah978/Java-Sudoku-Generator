@@ -12,15 +12,19 @@ import java.awt.image.BufferedImage;
  * Write a description of class SodokuBoard here.
  * 
  * @Noah Keck
- * @v1.2.1
- * @2/9/2018
+ * @v1.2.2
+ * @2/16/2018
  */
 public class SudokuBoard extends World
 {
     private static GreenfootImage backdrop, blankSquare, cursorSquare;
     private static GreenfootImage[] numberImages, blueNumberImages, redNumberImages;
     private static final int difficulty = 26;
+    private final int chances = 10;
+    private final int startingClues = 81;
     private Cell[][] board;
+    private boolean[][] tried;
+    private long startTime;
     public Random rand;
     public static int size, numberOfSolutions;
 
@@ -31,7 +35,7 @@ public class SudokuBoard extends World
     {    
         this(2);
     }
-
+    
     /**
      * Creates a new SodokuBoard based on given size used as a multiplier
      * 
@@ -52,6 +56,13 @@ public class SudokuBoard extends World
         if (isKeyDown("space")){
             createBoard();
             saveWorldAsImage();
+        }
+        if (isKeyDown("enter")){
+            int s = 0;
+            do{
+                s = Integer.parseInt(ask("Enter size 1-4"));
+            }while (s != 1 && s != 2 && s != 3 && s != 4);
+            setWorld(new SudokuBoard(s));
         }
     }
 
@@ -105,7 +116,9 @@ public class SudokuBoard extends World
         do{
             createCells();
             setNums(0,0);
-        }while(!removeNums());
+            startTime = System.nanoTime();
+            tried = new boolean[9][9];
+        }while(/*!removeNums(rand.nextInt(9), rand.nextInt(9), startingClues, chances, convertToMatrix())*/!removeNums());
     }
 
     /**
@@ -146,7 +159,6 @@ public class SudokuBoard extends World
     public boolean removeNums()
     {
         int clueCount = 81, r = 0, c = 0;
-        long startTime = System.nanoTime();
         int[][] b = convertToMatrix();
         while (clueCount > difficulty){
             while (true){
@@ -179,34 +191,109 @@ public class SudokuBoard extends World
                 }
             }
             
-            int[][] cloned = new int[b.length][b[0].length];
-            for(int i = 0; i < board.length; i++)
-                for(int j = 0; j < board[i].length; j++)
-                    cloned[i][j] = b[i][j];
-                    
-            checkForOneSolution(0,0,cloned);
+            numberOfSolutions = 0;
+            try{
+                checkForOneSolution(0,0,b.clone());
+            }
+            catch(Exception e){
+                //System.out.println(e);
+            }
+            
             if (numberOfSolutions <= 1){
                 for(int i = 0; i < board.length; i++)
                     for(int j = 0; j < board[i].length; j++)
                         board[i][j].setNum(b[i][j]);
-                if (clueCount > 60)
-                    clueCount -= 4;
-                else if (clueCount > 40)
-                    clueCount -= 2;
-                else
-                    clueCount--;
+                clueCount -= clueCount > 60 ? 4 : clueCount > 40 ? 2 : 1;
             }
             else
                 b = convertToMatrix();
-            numberOfSolutions = 0;
-            if (System.nanoTime() - startTime > Math.pow(10, 9) * 5){ // 4 seconds
+            
+            if (System.nanoTime() - startTime > Math.pow(10, 9) * 5){ // 5 seconds
                 out.println("Failed to reduce puzzle. Reached a clue count of: " + clueCount);
-                return false; 
+                return false;
             }
         }
         return true;
     }
-
+    
+    /**
+     * 
+     */
+    public boolean removeNums(int r, int c, int clueCount, int remain, int[][] boardCopy)
+    {   
+        if (remain <= 0)
+            return false;
+        if (tried[r][c])
+            return removeNums(rand.nextInt(9), rand.nextInt(9), clueCount, remain, boardCopy);
+        if (clueCount <= difficulty){
+            for(int i = 0; i < board.length; i++)
+                for(int j = 0; j < board[i].length; j++)
+                    board[i][j].setNum(boardCopy[i][j]);
+            return true;
+        }
+        int[][] b = boardCopy.clone();
+        boolean right = false;
+        if(clueCount > 60){ //groups of 4
+            if (r != 8 && c != 8 && !tried[r][c+1] && !tried[r+1][c] && !tried[r+1][c+1]){
+                for (int i = 0; i < 2; i++){
+                    b[r][c+i] = 0;
+                    b[r+1][c+i] = 0;
+                    tried[r][c+i] = true;
+                    tried[r+1][c+i] = true;
+                }
+            }
+            else
+                return removeNums(rand.nextInt(9), rand.nextInt(9), clueCount, remain, boardCopy);
+        }
+        else if (clueCount > 40){ //groups of 2
+            if (c != 8 && !tried[r][c+1]){ //extends to the right
+                for (int i = 0; i < 2; i++){
+                    b[r][c+i] = 0;
+                    tried[r][c+1] = true;
+                }
+                right = true;
+            }
+            else if (r != 8 && !tried[r+1][c]){ //extends below
+                for (int i = 0; i < 2; i++){
+                    b[r+i][c] = 0;
+                    tried[r+i][c] = true;
+                }
+            }
+            else
+                return removeNums(rand.nextInt(9), rand.nextInt(9), clueCount, remain, boardCopy);
+        }
+        else{ //1 by 1
+            b[r][c] = 0;
+            tried[r][c] = true;
+        }
+        
+        numberOfSolutions = 0;
+        try{
+            checkForOneSolution(0,0,b.clone());
+        }
+        catch(Exception e){
+            //System.out.println(e);
+        }
+        System.out.println("Sol: " + numberOfSolutions + " Clues: " + clueCount);
+        if (numberOfSolutions <= 1)
+            if (removeNums(rand.nextInt(9), rand.nextInt(9), clueCount - (clueCount > 60 ? 4 : clueCount > 40 ? 2 : 1), chances, b))
+                return true;
+        //if this removal did not work currently or in the future, it will the execute the following code
+        
+        if (clueCount > 60){ //reset booleans that weren't tried back to normal
+            tried[r][c+1] = false;
+            tried[r+1][c] = false;
+            tried[r+1][c+1] = false;
+        }
+        else if (clueCount > 40){
+            if (right)
+                tried[r][c+1] = false;
+            else
+                tried[r+1][c] = false;
+        }
+        return removeNums(rand.nextInt(9), rand.nextInt(9), clueCount, --remain, boardCopy);
+    }
+    
     /**
      * This method should check every possible combination of numbers to see if its a valid solution.
      * It should finally return true when the first blank number it checked runs out of numbers to check.
@@ -215,10 +302,11 @@ public class SudokuBoard extends World
      * @param c current column
      * @param boardCopy the numbers remaining in a sudoku grid
      */
-    public boolean checkForOneSolution(int r, int c, int[][] boardCopy)
+    public boolean checkForOneSolution(int r, int c, int[][] boardCopy) throws Exception
     {
         if (r >= 9){
-            numberOfSolutions++;
+            if (++numberOfSolutions > 1)
+                throw new Exception("Found more than one solution.");
             return false;
         }
         if (c >= 9)
