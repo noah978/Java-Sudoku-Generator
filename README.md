@@ -1,9 +1,9 @@
 # Java-Sudoku-Generator
 This program creates unlimited Sudoku puzzles of varying difficulty.
 
-VERSION: 1.2.1
+VERSION: 1.2.2
 
-DATE: 2/12/18
+DATE: 2/16/18
 
 AUTHORS: Noah Keck
 
